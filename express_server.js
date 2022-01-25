@@ -12,6 +12,15 @@ const urlDatabase = {
 
 };
 
+const getLongURL = function(shortURL) {
+  if (urlDatabase[shortURL]) {
+    return urlDatabase[shortURL];
+  }
+  return "URL Doesn't Exist!";
+};
+
+
+
 app.get("/urls", (req, res) => {
   const templateVars = { urls: urlDatabase };
   res.render("urls_index", templateVars);
@@ -30,8 +39,11 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
-  res.redirect(longURL);
+  const shortURL = req.params.shortURL;
+  const longURL = getLongURL(shortURL);
+  console.log(longURL);
+  const templateVars = { shortURL, longURL };
+  res.render("urls_show", templateVars);
 });
 
 
