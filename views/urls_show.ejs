@@ -21,12 +21,23 @@
         </div>
       </div>
     </nav>
-  </header>cd
+  </header>
   <div class="card text-center">
       <div class="card-header"></div>
       <div class="card-body">
         <h5 class="card-title">TinyURL for: <%= longURL %></h5>
         <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
+      </div>
+      <div class="">
+        <div class="card-header"> Edit
+        </div> 
+        <div class="card-body"> 
+          <form method="POST" action="/urls/<%= shortURL %>">
+            <lable> New URL: </lable>
+            <input  type="text" name="longURL" class="" value="<%= longURL %>"/></input>
+            <button type = "sumbit" class="btn btn-primary"> Submit </button>
+          </form>
+        </div>
       </div>
     <div class="card-footer text-muted"></div>
   </div>
