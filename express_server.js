@@ -12,19 +12,6 @@ const urlDatabase = {
 
 };
 
-const getLongURL = function(shortURL) {
-  if (urlDatabase[shortURL]) {
-    return urlDatabase[shortURL];
-  }
-  return "URL Doesn't Exist!";
-};
-
-
-
-app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
-  res.render("urls_index", templateVars);
-});
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -37,19 +24,6 @@ app.get("/urls.json", (req, res) => {
 app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
-
-app.get("/u/:shortURL", (req, res) => {
-  const shortURL = req.params.shortURL;
-  const longURL = getLongURL(shortURL);
-
-  if (longURL === "URL Doesn't Exist!") {
-    res.status(404).send("Sorry can't find URL!");
-  } else {
-    res.redirect(longURL);
-  }
-});
-
-
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
@@ -64,19 +38,19 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const shortURL = req.params.shortURL;
-  const longURL = getLongURL(shortURL);
+  const templateVars = { shortURL: req.params.shortURL, longURL: req.params.longURL};
+  res.render("urls_show", templateVars);
 });
 
-app.post("/urls", (req, res) => {
-  console.log(req.body);  // Log the POST request body to the console
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
-  const shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
-  res.redirect('/urls/' + shortURL);
-});
 
 function generateRandomString() {
   let r = (Math.random() + 1).toString(36).substring(6);
   console.log(r);
 } 
+
+
+app.post("/urls/:shortURL/delete", (req, res) => {
+  const shortURL = req.params.shortURL;
+  delete urlDatabase[shortURL];
+  res.redirect("/urls");
+}) 
