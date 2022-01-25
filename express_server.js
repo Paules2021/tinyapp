@@ -41,9 +41,12 @@ app.get("/hello", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = getLongURL(shortURL);
-  console.log(longURL);
-  const templateVars = { shortURL, longURL };
-  res.render("urls_show", templateVars);
+
+  if (longURL === "URL Doesn't Exist!") {
+    res.status(404).send("Sorry can't find URL!");
+  } else {
+    res.redirect(longURL);
+  }
 });
 
 
@@ -61,8 +64,8 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: req.params.longURL};
-  res.render("urls_show", templateVars);
+  const shortURL = req.params.shortURL;
+  const longURL = getLongURL(shortURL);
 });
 
 app.post("/urls", (req, res) => {
