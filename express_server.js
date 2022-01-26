@@ -98,6 +98,9 @@ app.get("/register", (req, res) => {
 
 //show the login page
 app.get("/login", (req, res) => {
+  if (req.cookies["user_id"]) {
+    return res.redirect("/urls");
+  }
   const templateVars = { user: users[req.cookies["user_id"]]};
   res.render("urls_login", templateVars);
 });
@@ -184,9 +187,20 @@ app.post("/urls/:shortURL", (req, res) => {
 }) 
 
 app.post("/login", (req, res) => {
-  res.cookie("user_id", userInfo.id)
-  res.redirect('/urls');
-
+  const email = req.body.email;
+  const password = req.body.password;
+  // if email is not in the db, return 403 
+  if(!findUserByEmail(email)) {
+    return res.status(403).send("Email does not exist");
+  }
+  // if password isnt correct, return 403
+  if(!checkPassword(email, password)) {
+    return res.status(403).send("Wrong password!");
+  }
+  // find the ID using the findUserByEmail function
+  const id = findUserByEmail(email);
+  res.cookie("user_id", id);
+  res.redirect("/urls");
 })
 
 app.listen(PORT, () => {
