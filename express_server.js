@@ -63,7 +63,7 @@ const findUserByEmail = function(email) {
   return false;
 }
 
-// check to see if the password given matches the password (same email) in the database
+// check to see if the password given matches the password (same email) in the db
 const checkPassword = function(email, password) {
   for (const id in users) {
     if (users[id].email === email && users[id].password === password) {
