@@ -16,6 +16,33 @@ const urlDatabase = {
 
 };
 
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+}
+
+const createUser = function(id, email, password) {
+  const user = {
+    id,
+    email,
+    password
+  };
+  return user;
+};
+
+
+function generateRandomString() {
+  return (Math.random() + 1).toString(36).substring(6);
+} 
+
 
 app.get("/", (req, res) => {
   res.send("Welcome to tinyapp!");
@@ -35,6 +62,22 @@ app.get("/register", (req, res) => {
     username: req.cookies["username"]
   };
   res.render("register_index", templateVars);
+});
+
+
+// (POST-REGISTER)
+app.post("/register", (req, res) => {
+  if (req.body.email === '') {
+    res.send("Error 404");
+  }
+  const userInfo = {
+    id: generateRandomString(),
+    email: req.body.email,
+    password: req.body.password
+  };
+  users[userInfo.id] = userInfo;
+  res.cookie("user_id", userInfo.id);
+  res.redirect('/urls');
 });
 
 
@@ -69,9 +112,7 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 
-function generateRandomString() {
-  return (Math.random() + 1).toString(36).substring(6);
-} 
+
 
 // route to receive the form submission
 app.post("/urls", (req, res) => {
