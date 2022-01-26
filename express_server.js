@@ -90,6 +90,10 @@ app.get("/hello", (req, res) => {
 
 //(GET-REGISTER)User Registeration from
 app.get("/register", (req, res) => {
+// if the user is logged in, redirect to /urls
+  if (req.cookies["user_id"]) {
+    return res.redirect("/urls");
+  }
   const templateVars = {
   user: users[req.cookies["user_id"]]
   };
@@ -98,6 +102,7 @@ app.get("/register", (req, res) => {
 
 //show the login page
 app.get("/login", (req, res) => {
+// if the user is logged in, redirect to /urls
   if (req.cookies["user_id"]) {
     return res.redirect("/urls");
   }
@@ -142,9 +147,24 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+// route to receive the form submission
+app.post("/urls", (req, res) => {
+    // if none user try to add a new url, return error message
+    if (!req.cookies["user_id"]) {
+      return res.status(400).send("You must be logged in to add!");
+    }
+  const newShortUrl = generateRandomString(); // generate a new short URL
+  urlDatabase[newShortUrl] = req.body.longURL // add the key value pair to the URL Database
+  res.redirect(`/urls/${newShortUrl}`); // redirect to the new URL page
+});
+
 
 // route to present the form to the user
 app.get("/urls/new", (req, res) => {
+    // if a user is not logged in and try to access /urls/new redirect to /urls/login
+    if (!req.cookies["user_id"]) {
+      return res.redirect("/login");
+    }
   const templateVars = {user: users[req.cookies["user_id"]]};
   res.render("urls_new", templateVars);
 });
@@ -161,15 +181,6 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);
 });
 
-
-
-
-// route to receive the form submission
-app.post("/urls", (req, res) => {
-  const newShortUrl = generateRandomString(); // generate a new short URL
-  urlDatabase[newShortUrl] = req.body.longURL // add the key value pair to the URL Database
-  res.redirect(`/urls/${newShortUrl}`); // redirect to the new URL page
-});
 
 
 app.post("/urls/:shortURL/delete", (req, res) => {
