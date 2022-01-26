@@ -18,7 +18,7 @@ const urlDatabase = {
 
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.send("Welcome to tinyapp!");
 });
 
 app.get("/urls.json", (req, res) => {
@@ -26,8 +26,18 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
+  res.send("<html><h1>Hello <b>World</b></h1><p>Welcome to home page!</p></html>\n");
 });
+
+//(GET-REGISTER)User Registeration from
+app.get("/register", (req, res) => {
+  const templateVars = {
+    username: req.cookies["username"]
+  };
+  res.render("register_index", templateVars);
+});
+
+
 
 app.post("/logout", (req, res) => {
   res.clearCookie('username');
