@@ -96,6 +96,12 @@ app.get("/register", (req, res) => {
   res.render("register_index", templateVars);
 });
 
+//show the login page
+app.get("/login", (req, res) => {
+  const templateVars = { user: users[req.session.userID]};
+  res.render("urls_login", templateVars);
+});
+
 
 // (POST-REGISTER)
 app.post("/register", (req, res) => {
