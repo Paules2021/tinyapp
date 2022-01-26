@@ -6,6 +6,7 @@ const cookieParser = require("cookie-parser")
 app.use(cookieParser());
 
 const bodyParser = require("body-parser");
+const e = require("express");
 app.use(bodyParser.urlencoded({extended: true}));
 
 app.set("view engine", "ejs");
@@ -44,6 +45,37 @@ function generateRandomString() {
 } 
 
 
+// Check if the email or the passwords are empty strings.
+const ifEmptyString = function(email, password) {
+  if (email === "" || password === "") {
+    return true;
+  }
+  return false;
+}
+
+// check to see if an email is exist
+const findUserByEmail = function(email) {
+  for (const id in users) {
+    if (users[id].email === email) {
+      return id;
+    }
+  }
+  return false;
+}
+
+// check to see if the password given matches the password (same email) in the database
+const checkPassword = function(email, password) {
+  for (const id in users) {
+    if (users[id].email === email && users[id].password === password) {
+      return true;
+    }
+  }
+  return false;
+}
+
+
+
+
 app.get("/", (req, res) => {
   res.send("Welcome to tinyapp!");
 });
@@ -59,7 +91,7 @@ app.get("/hello", (req, res) => {
 //(GET-REGISTER)User Registeration from
 app.get("/register", (req, res) => {
   const templateVars = {
-    username: req.cookies["username"]
+  user: users[req.cookies["user_id"]]
   };
   res.render("register_index", templateVars);
 });
@@ -67,41 +99,50 @@ app.get("/register", (req, res) => {
 
 // (POST-REGISTER)
 app.post("/register", (req, res) => {
-  if (req.body.email === '') {
-    res.send("Error 404");
-  }
-  const userInfo = {
-    id: generateRandomString(),
-    email: req.body.email,
-    password: req.body.password
+  const id = generateRandomString();
+  const email = req.body.email;
+  const password = req.body.password;
+  // if email or password is empty, send an error 
+  if (ifEmptyString(email, password)) {
+    return res.status(400).send("Email or Password cannot be empty");
   };
-  users[userInfo.id] = userInfo;
-  res.cookie("user_id", userInfo.id);
-  res.redirect('/urls');
+  // if someone registers with existing email, send an error message
+  if (findUserByEmail(email)) {
+    return res.status(400).send("Email already exists");
+  }
+  // use the helper function create a user object
+  const user = createUser(id, email, password);
+  // add the new user object to the users database
+  users[id] = user;
+  // set user_id cookie contraining the user's newly generated ID
+  res.cookie("user_id", id);
+  res.redirect("/urls");
+
 });
 
 
 
 app.post("/logout", (req, res) => {
-  res.clearCookie('username');
+  res.cookie("user_id", userInfo.id);
   res.redirect('/urls');
 });
 
 // route to display a table of the URL Database (long and short URLS)
 app.get("/urls", (req, res) => {
-  const templateVars = { username: req.cookies["username"], urls: urlDatabase };
+  const templateVars = {user: users[req.cookies["user_id"]], urls: urlDatabase };
   res.render("urls_index", templateVars);
 });
 
 
 // route to present the form to the user
 app.get("/urls/new", (req, res) => {
-  const templateVars = { username: req.cookies["username"]};
+  const templateVars = {user: users[req.cookies["user_id"]]};
   res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL],     username: req.cookies["username"]};
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL],
+  user: users[req.cookies["user_id"]]};
   res.render("urls_show", templateVars);
 });
 
@@ -137,8 +178,7 @@ app.post("/urls/:shortURL", (req, res) => {
 }) 
 
 app.post("/login", (req, res) => {
-  const username = req.body.username;
-  res.cookie('username', username);
+  res.cookie("user_id", userInfo.id)
   res.redirect('/urls');
 
 })
