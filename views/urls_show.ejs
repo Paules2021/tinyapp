@@ -25,6 +25,8 @@
   <div class="card text-center">
       <div class="card-header"></div>
       <div class="card-body">
+        <% if(user) {%>
+          <% if(urls[shortURL]) { %>
         <h5 class="card-title">TinyURL for: <%= longURL %></h5>
         <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
       </div>
@@ -37,6 +39,12 @@
             <input  type="text" name="longURL" class="" value="<%= longURL %>"/></input>
             <button type = "sumbit" class="btn btn-primary"> Submit </button>
           </form>
+          <% } else { %>
+            <p>You don't have access to this URL!</p>
+          <% } %>
+        <% } else { %>
+          <p>Please Login or Register to see the content!</p>
+        <% } %>  
         </div>
       </div>
     <div class="card-footer text-muted"></div>

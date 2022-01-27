@@ -207,20 +207,27 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL,
-  user: users[req.cookies["user_id"]]};
+  const id = req.cookies["user_id"];
+  // filter through the URL database
+  const filteredDatabase = urlsForUser(id);
+  const templateVars = {
+    urls: filteredDatabase,
+    shortURL: req.params.shortURL, 
+    longURL: urlDatabase[req.params.shortURL].longURL,
+    user: users[req.cookies["user_id"]]
+   };
   res.render("urls_show", templateVars);
 });
 
 // route to handle shortURL requests, clicking on the shortURL will lead to the longURL
 app.get("/u/:shortURL", (req, res) => {
-    // if the :shortURL does not exist in the database, throw an error
-    if (!checkShortUrl(req.params.shortURL)) {
-      return res.status(400).send("This shortURL does not exist!");
-    }
-    const shortURL = req.params.shortURL;
+  const shortURL = req.params.shortURL;
+  // if the shortURL does not exist, return a error message
+  if(checkShortUrl(shortURL)) {
     const longURL = urlDatabase[shortURL].longURL;
-  res.redirect(longURL);
+    return res.redirect(longURL);
+  }
+  res.status(400).send("This short URL does not exist!");
 });
 
 
