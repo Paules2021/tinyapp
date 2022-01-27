@@ -26,7 +26,7 @@ const ifEmptyString = function(email, password) {
 }
 
 // check to see if an email is exist
-const findUserByEmail = function(email,user) {
+const findUserByEmail = function(email,users) {
   for (const id in users) {
     if (users[id].email === email) {
       return id;

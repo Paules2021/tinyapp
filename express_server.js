@@ -103,11 +103,11 @@ app.post("/register", (req, res) => {
 });
 
 
-
 app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect('/urls');
 });
+
 
 // route to display a table of the URL Database (long and short URLS)
 app.get("/urls", (req, res) => {
@@ -117,6 +117,7 @@ app.get("/urls", (req, res) => {
   const templateVars = {user: users[req.session.user_id], urls: filteredDatabase };
   res.render("urls_index", templateVars);
 });
+
 
 // route to receive the form submission
 app.post("/urls", (req, res) => {
@@ -143,6 +144,7 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
+
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const id = req.session.user_id;
@@ -161,6 +163,7 @@ app.get("/urls/:shortURL", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+
 // route to handle shortURL requests, clicking on the shortURL will lead to the longURL
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
@@ -171,7 +174,6 @@ app.get("/u/:shortURL", (req, res) => {
   }
   res.status(400).send("This short URL does not exist!");
 });
-
 
 
 app.post("/urls/:shortURL/delete", (req, res) => {
@@ -200,6 +202,7 @@ app.post("/urls/:shortURL", (req, res) => {
   res.redirect("/urls");
 }) 
 
+
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
@@ -216,6 +219,7 @@ app.post("/login", (req, res) => {
   req.session.user_id = id;
   res.redirect("/urls");
 })
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
