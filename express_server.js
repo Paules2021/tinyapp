@@ -84,10 +84,23 @@ const checkShortUrl = function(shortURL) {
     if(url === shortURL) {
       return true;
     }
-    return false;
   }
+  return false;
 };
 
+// return the URLs where the userID is equal to the id of the current user
+const urlsForUser = function(id) {
+  const filteredDb = {};
+  for (const url in urlDatabase) {
+    if(urlDatabase[url].userID === id) {
+      filteredDb[url] = {
+        longURL: urlDatabase[url].longURL,
+        userID: urlDatabase[url].userID
+      }
+    }
+  }
+  return filteredDb;
+};
 
 
 
@@ -160,7 +173,10 @@ app.post("/logout", (req, res) => {
 
 // route to display a table of the URL Database (long and short URLS)
 app.get("/urls", (req, res) => {
-  const templateVars = {user: users[req.cookies["user_id"]], urls: urlDatabase };
+    const id = req.cookies["user_id"];
+  // filter through the URL database
+  const filteredDatabase = urlsForUser(id)
+  const templateVars = {user: users[req.cookies["user_id"]], urls: filteredDatabase };
   res.render("urls_index", templateVars);
 });
 
@@ -201,14 +217,20 @@ app.get("/u/:shortURL", (req, res) => {
     if (!checkShortUrl(req.params.shortURL)) {
       return res.status(400).send("This shortURL does not exist!");
     }
-  const longURL = urlDatabase[req.params.shortURL].longURL;
+    const shortURL = req.params.shortURL;
+    const longURL = urlDatabase[shortURL].longURL;
   res.redirect(longURL);
 });
 
 
 
 app.post("/urls/:shortURL/delete", (req, res) => {
+  const id = req.cookies["user_id"];
+  const filteredDatabase = urlsForUser(id);
   const shortURL = req.params.shortURL;
+  if (!filteredDatabase[shortURL]) {
+    return res.status(400).send("You cannot delete this.");
+  }
   delete urlDatabase[shortURL];
   res.redirect("/urls");
 })
