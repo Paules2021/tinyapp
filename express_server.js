@@ -12,9 +12,14 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
-
+  b6UTxQ: {
+      longURL: "https://www.tsn.ca",
+      userID: "aJ48lW"
+  },
+  i3BoGr: {
+      longURL: "https://www.google.ca",
+      userID: "aJ48lW"
+  }
 };
 
 const users = { 
@@ -25,8 +30,8 @@ const users = {
   },
  "user2RandomID": {
     id: "user2RandomID", 
-    email: "user2@example.com", 
-    password: "dishwasher-funk"
+    email: "p.elishaee@gmail.com", 
+    password: "12345"
   }
 }
 
@@ -72,6 +77,18 @@ const checkPassword = function(email, password) {
   }
   return false;
 }
+
+// check to see if shortURL exists in the db
+const checkShortUrl = function(shortURL) {
+  for (const url in urlDatabase) {
+    if(url === shortURL) {
+      return true;
+    }
+    return false;
+  }
+};
+
+
 
 
 
@@ -154,7 +171,10 @@ app.post("/urls", (req, res) => {
       return res.status(400).send("You must be logged in to add!");
     }
   const newShortUrl = generateRandomString(); // generate a new short URL
-  urlDatabase[newShortUrl] = req.body.longURL // add the key value pair to the URL Database
+  urlDatabase[newShortUrl] = {
+    longURL: req.body.longURL,
+    userID: req.cookies["user_id"]
+  } // add the key value pair to the URL Database
   res.redirect(`/urls/${newShortUrl}`); // redirect to the new URL page
 });
 
@@ -170,14 +190,18 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL],
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL,
   user: users[req.cookies["user_id"]]};
   res.render("urls_show", templateVars);
 });
 
 // route to handle shortURL requests, clicking on the shortURL will lead to the longURL
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+    // if the :shortURL does not exist in the database, throw an error
+    if (!checkShortUrl(req.params.shortURL)) {
+      return res.status(400).send("This shortURL does not exist!");
+    }
+  const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
 });
 
@@ -193,7 +217,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 // route to update a URL and redirect to the /urls page
 app.post("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  urlDatabase[shortURL] = req.body.longURL; // update the longURL of the shortURL in the database
+  urlDatabase[shortURL].longURL = req.body.longURL; // update the longURL of the shortURL in the database
   res.redirect("/urls");
 }) 
 
