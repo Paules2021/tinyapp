@@ -18,7 +18,7 @@ const generateRandomString = function() {
 
 
 // Check if the email or the passwords are empty strings.
-const ifEmptyString = function(email, password) {
+const isEmptyString = function(email, password) {
   if (email === "" || password === "") {
     return true;
   }
@@ -72,7 +72,7 @@ const urlsForUser = function(id, urlDatabase) {
 module.exports = {
   generateRandomString,
   createUser,
-  ifEmptyString,
+  isEmptyString,
   findUserByEmail,
   checkPassword,
   checkShortUrl,

@@ -15,7 +15,7 @@ const users = {
   }
 };
 
-const {findUserByEmail, urlsForUser, ifEmptyString, checkShortUrl} = require('../helpers.js');
+const {findUserByEmail, urlsForUser, isEmptyString, checkShortUrl} = require('../helpers.js');
 
 const urlDatabase = {
   b6UTxQ: {
@@ -56,15 +56,15 @@ describe('urlsForUser', function() {
 });
 
 
-describe('ifEmptyString', function() {
+describe('isEmptyString', function() {
   it('should return true if email or password is empty string', function() {
-    const empty = ifEmptyString("", "abc");
+    const empty = isEmptyString("", "abc");
     const expectedOutput = true;
     assert.strictEqual(empty, expectedOutput);
   });
 
   it('should return false if email or password isnt empty', function() {
-    const empty = ifEmptyString("cdc", "abc");
+    const empty = isEmptyString("cdc", "abc");
     const expectedOutput = false;
     assert.strictEqual(empty, expectedOutput);
   });

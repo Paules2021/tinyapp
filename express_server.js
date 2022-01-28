@@ -15,7 +15,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 app.set("view engine", "ejs");
 
-const {generateRandomString, createUser, ifEmptyString, findUserByEmail, checkPassword, checkShortUrl, urlsForUser } = require("./helpers.js");
+const {generateRandomString, createUser, isEmptyString, findUserByEmail, checkPassword, checkShortUrl, urlsForUser } = require("./helpers.js");
 
 const urlDatabase = {
   b6UTxQ: {
@@ -91,11 +91,11 @@ app.post("/register", (req, res) => {
   const password = req.body.password;
   const hashedPassword = bcrypt.hashSync(password, 10);
   // if email or password is empty, send an error 
-  if (ifEmptyString(email, password)) {
+  if (isEmptyString(email, password)) {
     return res.status(400).send("Email or Password cannot be empty");
   };
   // if someone registers with existing email, send an error message
-  if (findUserByEmail(email)) {
+  if (findUserByEmail(email,users)) {
     return res.status(400).send("Email already exists");
   }
   // use the helper function create a user object
@@ -118,7 +118,8 @@ app.post("/logout", (req, res) => {
 app.get("/urls", (req, res) => {
   const id = req.session.user_id;
   const filteredDatabase = urlsForUser(id, urlDatabase)
-  const templateVars = {user: users[req.session.user_id], urls: filteredDatabase };
+  const templateVars = {user: users[req.session.user_id],
+    urls: filteredDatabase };
   res.render("urls_index", templateVars);
 });
 
