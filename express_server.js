@@ -80,7 +80,9 @@ app.get("/login", (req, res) => {
   if (currentUser) {
     return res.redirect("/urls");
   }
-  const templateVars = { user: users[req.session.user_id]};
+  const templateVars = {
+     user: users[req.session.user_id]
+    };
   res.render("urls_login", templateVars);
 });
 
@@ -118,8 +120,10 @@ app.post("/logout", (req, res) => {
 app.get("/urls", (req, res) => {
   const id = req.session.user_id;
   const filteredDatabase = urlsForUser(id, urlDatabase)
-  const templateVars = {user: users[req.session.user_id],
-    urls: filteredDatabase };
+  const templateVars = {
+    user: users[req.session.user_id],
+    urls: filteredDatabase
+  };
   res.render("urls_index", templateVars);
 });
 
@@ -147,7 +151,9 @@ app.get("/urls/new", (req, res) => {
     if (!currentUser) {
       return res.redirect("/login");
     }
-  const templateVars = {user: users[req.session.user_id]};
+  const templateVars = {
+    user: users[req.session.user_id]
+  };
   res.render("urls_new", templateVars);
 });
 
