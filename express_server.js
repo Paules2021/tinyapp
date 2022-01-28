@@ -30,21 +30,26 @@ const urlDatabase = {
 
 
 const users = { 
-  /*"userRandomID": {
+ "userRandomID": {
     id: "userRandomID", 
     email: "user@example.com", 
-    password: bcrypt.hashSync("purple-monkey-dinosaur", 10),
+    password: bcrypt.hashSync("1234", 10)
   },
  "user2RandomID": {
     id: "user2RandomID", 
     email: "p.elishaee@gmail.com",
     password: bcrypt.hashSync("12345", 10)
-  }*/
+  }
 }
 
 
 app.get("/", (req, res) => {
-  res.send("Welcome to tinyapp!");
+  const id = req.session.user_id;
+  const user = users[id];
+  if (!user) {
+    return res.redirect("/login");
+  }
+  return res.redirect("/urls");
 });
 
 app.get("/urls.json", (req, res) => {
@@ -55,10 +60,11 @@ app.get("/hello", (req, res) => {
   res.send("<html><h1>Hello <b>World</b></h1><p>Welcome to home page!</p></html>\n");
 });
 
-//(GET-REGISTER)User Registeration from
+//User Registeration from(if the user is logged in, redirect to /urls)
 app.get("/register", (req, res) => {
-// if the user is logged in, redirect to /urls
-  if (req.session.user_id) {
+  const id = req.session.user_id;
+  const currentUser = users[id];
+  if (currentUser) {
     return res.redirect("/urls");
   }
   const templateVars = {
@@ -67,10 +73,11 @@ app.get("/register", (req, res) => {
   res.render("register_index", templateVars);
 });
 
-//show the login page
+//show the login page(if the user is logged in, redirect to /urls)
 app.get("/login", (req, res) => {
-// if the user is logged in, redirect to /urls
-  if (req.session.user_id) {
+  const id = req.session.user_id;
+  const currentUser = users[id];
+  if (currentUser) {
     return res.redirect("/urls");
   }
   const templateVars = { user: users[req.session.user_id]};
@@ -78,7 +85,6 @@ app.get("/login", (req, res) => {
 });
 
 
-// (POST-REGISTER)
 app.post("/register", (req, res) => {
   const id = generateRandomString();
   const email = req.body.email;
@@ -96,7 +102,6 @@ app.post("/register", (req, res) => {
   const user = createUser(id, email, hashedPassword);
   // add the new user object to the users database
   users[id] = user;
-  // set user_id cookie contraining the user's newly generated ID
   req.session.user_id = id;
   res.redirect("/urls");
 
@@ -109,10 +114,9 @@ app.post("/logout", (req, res) => {
 });
 
 
-// route to display a table of the URL Database (long and short URLS)
+// route to display a table of the URL Db
 app.get("/urls", (req, res) => {
   const id = req.session.user_id;
-  // filter through the URL database
   const filteredDatabase = urlsForUser(id, urlDatabase)
   const templateVars = {user: users[req.session.user_id], urls: filteredDatabase };
   res.render("urls_index", templateVars);
@@ -121,23 +125,25 @@ app.get("/urls", (req, res) => {
 
 // route to receive the form submission
 app.post("/urls", (req, res) => {
-    // if none user try to add a new url, return error message
-    if (!req.session.user_id) {
+  const id = req.session.user_id;
+  const currentUser = users[id];  
+  // if none user try to add a new url, return error message
+    if (!currentUser) {
       return res.status(400).send("You must be logged in to add!");
     }
   const newShortUrl = generateRandomString(); // generate a new short URL
-  urlDatabase[newShortUrl] = {
-    longURL: req.body.longURL,
-    userID: req.cookies["user_id"]
-  } // add the key value pair to the URL Database
-  res.redirect(`/urls/${newShortUrl}`); // redirect to the new URL page
+  urlDatabase[newShortUrl] = {longURL: req.body.longURL, userID: req.session.user_id
+  } // add the keys to urlDatabase
+  res.redirect(`/urls/${newShortUrl}`);
 });
 
 
-// route to present the form to the user
+// present the form
 app.get("/urls/new", (req, res) => {
     // if a user is not logged in and try to access /urls/new redirect to /urls/login
-    if (!req.session.user_id) {
+    const id = req.session.user_id;
+    const currentUser = users[id];
+    if (!currentUser) {
       return res.redirect("/login");
     }
   const templateVars = {user: users[req.session.user_id]};
@@ -148,11 +154,10 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const id = req.session.user_id;
-    // if the shortURL does not exist, return error message
+    // if the shortURL does not exist, return error 
     if (!checkShortUrl(shortURL, urlDatabase)) {
       return res.status(400).send("This short URL does not exist!");
     }
-  // filter through the URL database
   const filteredDatabase = urlsForUser(id, urlDatabase);
   const templateVars = {
     urls: filteredDatabase,
@@ -164,10 +169,10 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 
-// route to handle shortURL requests, clicking on the shortURL will lead to the longURL
+// route to handle shortURL requests 
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  // if the shortURL does not exist, return a error message
+  // if the shortURL does not exist, return error
   if(checkShortUrl(shortURL, urlDatabase)) {
     const longURL = urlDatabase[shortURL].longURL;
     return res.redirect(longURL);
@@ -178,6 +183,10 @@ app.get("/u/:shortURL", (req, res) => {
 
 app.post("/urls/:shortURL/delete", (req, res) => {
   const id = req.session.user_id;
+  const currentUser = users[id];
+  if (!currentUser) {
+    return res.status(400).send("You don't have aceess to delete!");
+  }
   const filteredDatabase = urlsForUser(id, urlDatabase);
   const shortURL = req.params.shortURL;
   if (!filteredDatabase[shortURL]) {
@@ -188,17 +197,19 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 })
 
 
-// route to update a URL and redirect to the /urls page
+// route to update a URL 
 app.post("/urls/:shortURL", (req, res) => {
   const id = req.session.user_id;
-  // filter through the URL database
+  const currentUser = users[id];
+  if (!currentUser) {
+    return res.status(400).send("You are not logged in to change URL");
+  }
   const filteredDatabase = urlsForUser(id, urlDatabase);
   const shortURL = req.params.shortURL;
-  // check if shortURL is in the filtered database, if not, show an error
   if (!filteredDatabase[shortURL]) {
     return res.status(400).send("You cannot edit this.");
   }
-  urlDatabase[shortURL].longURL = req.body.longURL; // update the longURL of the shortURL in the database
+  urlDatabase[shortURL].longURL = req.body.longURL; 
   res.redirect("/urls");
 }) 
 

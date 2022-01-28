@@ -6,15 +6,15 @@ const createUser = function(id, email, hashedPassword) {
   const user = {
     id,
     email,
-    hashedPassword
+    password : hashedPassword
   };
   return user;
 };
 
 // Genereate a shortURL
-const generateRandomString = function(){
-  return (Math.random() + 1).toString(36).substring(6);
-} 
+const generateRandomString = function() {
+  return Math.random().toString(36).substr(2, 6);
+};
 
 
 // Check if the email or the passwords are empty strings.
@@ -38,7 +38,7 @@ const findUserByEmail = function(email,users) {
 // check to see if the password matches the existing password in the db
 const checkPassword = function(email, password, users) {
   for (const id in users) {
-    if (users[id].email === email && bcrypt.compareSync(password, users[id].hashedPassword)) {
+    if (users[id].email === email && bcrypt.compareSync(password, users[id].password)) {
       return true;
     }
   }
