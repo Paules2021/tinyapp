@@ -12,6 +12,7 @@ TinyApp is a full stack web application built with Node and Express that allows 
 *Screenshot of Login Page*
 !["screenshot description"](https://github.com/Paules2021/tinyapp/blob/master/docs/login-page.png?raw=true)
 
+
 ## Dependencies
 - [Node.js](https://nodejs.org/en/)
 - [Express](https://expressjs.com/)

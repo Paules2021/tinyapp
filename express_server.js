@@ -129,7 +129,7 @@ app.post("/urls", (req, res) => {
   const currentUser = users[id];  
   // if none user try to add a new url, return error message
     if (!currentUser) {
-      return res.status(400).send("You must be logged in to add!");
+      return res.status(401).send("You must be logged in to add!");
     }
   const newShortUrl = generateRandomString(); // generate a new short URL
   urlDatabase[newShortUrl] = {longURL: req.body.longURL, userID: req.session.user_id
@@ -156,7 +156,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const id = req.session.user_id;
     // if the shortURL does not exist, return error 
     if (!checkShortUrl(shortURL, urlDatabase)) {
-      return res.status(400).send("This short URL does not exist!");
+      return res.status(404).send("This short URL does not exist!");
     }
   const filteredDatabase = urlsForUser(id, urlDatabase);
   const templateVars = {
@@ -177,7 +177,7 @@ app.get("/u/:shortURL", (req, res) => {
     const longURL = urlDatabase[shortURL].longURL;
     return res.redirect(longURL);
   }
-  res.status(400).send("This short URL does not exist!");
+  res.status(404).send("This short URL does not exist!");
 });
 
 
@@ -185,12 +185,12 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   const id = req.session.user_id;
   const currentUser = users[id];
   if (!currentUser) {
-    return res.status(400).send("You don't have aceess to delete!");
+    return res.status(401).send("You don't have aceess to delete!");
   }
   const filteredDatabase = urlsForUser(id, urlDatabase);
   const shortURL = req.params.shortURL;
   if (!filteredDatabase[shortURL]) {
-    return res.status(400).send("You cannot delete this.");
+    return res.status(401).send("You cannot delete this.");
   }
   delete urlDatabase[shortURL];
   res.redirect("/urls");
@@ -202,12 +202,12 @@ app.post("/urls/:shortURL", (req, res) => {
   const id = req.session.user_id;
   const currentUser = users[id];
   if (!currentUser) {
-    return res.status(400).send("You are not logged in to change URL");
+    return res.status(401).send("You are not logged in to change URL");
   }
   const filteredDatabase = urlsForUser(id, urlDatabase);
   const shortURL = req.params.shortURL;
   if (!filteredDatabase[shortURL]) {
-    return res.status(400).send("You cannot edit this.");
+    return res.status(401).send("You cannot edit this.");
   }
   urlDatabase[shortURL].longURL = req.body.longURL; 
   res.redirect("/urls");
@@ -219,11 +219,11 @@ app.post("/login", (req, res) => {
   const password = req.body.password;
   // if email is not in the db, return 403 
   if(!findUserByEmail(email, users)) {
-    return res.status(403).send("Email does not exist");
+    return res.status(400).send("Email does not exist");
   }
   // if password isnt correct, return 403
   if(!checkPassword(email, password, users)) {
-    return res.status(403).send("Wrong password!");
+    return res.status(400).send("Wrong password!");
   }
   // find the ID using the findUserByEmail function
   const id = findUserByEmail(email, users);
